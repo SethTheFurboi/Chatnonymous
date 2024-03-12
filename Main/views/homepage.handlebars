@@ -1,11 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <style>
+      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+      #form { background: rgba(130,161,209, 0.5); padding: 0.25rem; position: fixed; bottom: 0; left: 21.58dvw; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
+      #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
+      #input:focus { outline: none; }
+      #form > button { 
+        background: #82A1D1; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; 
+    }
+
+    #form > button:hover {
+        background: #5572B2
+    }
+
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages > li { padding: 0.5rem 1rem; }
+      #messages > li:nth-child(odd) { background: #efefef; }
+
+      #sidebar { 
+        margin-right: 20px;
+        padding: 20px;
+        clear: both;
+        float: left;
+        width: 20%;
+        height: 96.9dvh;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        background-color: #82A1D1;
+    }
+
+    #sidebar > button {
+        background: #82A1D1;
+        width: 90%;
+        height: 5rem;
+        border-radius: 5px;
+        display: flex;
+        height: 3rem;
+        margin: 1rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        text-align: center;
+    }
+
+
+
+
+    </style>
+    {{!-- <link rel="stylesheet" src="../public/css/styles.css"> --}}
 </head>
 <body>
-    {{{ body }}}
+    <div id="sidebar">
+        <button>
+            TEST BUTTON
+        </button>
+    </div>
+  <ul id="messages"></ul>
+  <form id="form" action="">
+    <input id="input" autocomplete="off" /><button>Send</button>
+  </form>
+  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+  <script>
+    let counter = 0;
+
+    const socket = io({
+      auth: {
+        serverOffset: 0
+      },
+      ackTimeout: 10000,
+      retries: 3,
+    });
+
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const messages = document.getElementById('messages');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (input.value) {
+        const clientOffset = `${socket.id}-${counter++}`;
+        socket.emit('chat message', input.value, clientOffset);
+        input.value = '';
+      }
+    });
+
+    socket.on('chat message', (msg, serverOffset) => {
+      const item = document.createElement('li');
+      item.textContent = msg;
+      messages.appendChild(item);
+      window.scrollTo(0, document.body.scrollHeight);
+      socket.auth.serverOffset = serverOffset;
+    });
+  </script>
 </body>
 </html>
